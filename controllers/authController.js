@@ -45,7 +45,7 @@ const registerUser = async (req, res) => {
         const otp = generateOTP();
         const otpHash = await bcrypt.hash(otp, 10);
 
-        //  Create the user
+        //  Creating the user
         const user = await User.create({
             name: name.trim(),
             email: normalizedEmail,
@@ -85,9 +85,10 @@ const registerUser = async (req, res) => {
 };
 
 
-// Verify email using OTP
+
 const verifyOTP = async (req, res) => {
     try {
+
         const { email, otp } = req.body;
 
     
@@ -101,10 +102,8 @@ const verifyOTP = async (req, res) => {
         
         const normalizedEmail = email.trim().toLowerCase();
 
-        // Find user and fetch hidden OTP fields
-        const user = await User.findOne({
-            email: normalizedEmail
-        }).select("+otpHash +otpExpiryAt +otpAttempts");
+        // find user then fetching hidden OTP details
+        const user = await User.findOne({email: normalizedEmail}).select("+otpHash +otpExpiryAt +otpAttempts");
 
         if (!user) {
             return res.status(404).json({
@@ -121,7 +120,7 @@ const verifyOTP = async (req, res) => {
             });
         }
 
-        // Checking otp existence and expiry
+        // Checking otp existence & expiry
         if (!user.otpHash || !user.otpExpiryAt ||
             user.otpExpiryAt.getTime() <= Date.now()) {
             return res.status(400).json({
@@ -255,10 +254,10 @@ const resendOTP = async (req, res) => {
 
 const loginUser = async (req, res) => {
     try {
-        // 1. Get email and password from request body
+        
         const { email, password } = req.body;
 
-        // 2. Validate required fields
+        
         if (!email || !password) {
             return res.status(400).json({
                 success: false,
@@ -266,15 +265,15 @@ const loginUser = async (req, res) => {
             });
         }
 
-        // 3. Normalize email
-        const normalizedEmail = email.trim().toLowerCase();
+        
+         const normalizedEmail = email.trim().toLowerCase();
 
-        // 4. Find user and explicitly retrieve passwordHash
+        
         const user = await User.findOne({
             email: normalizedEmail
         }).select("+passwordHash");
 
-        // 5. Reject if user doesn't exist or password is incorrect
+           //  Reject if user doesn't exist /password incorrect
         if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
             return res.status(401).json({
                 success: false,
@@ -282,7 +281,7 @@ const loginUser = async (req, res) => {
             });
         }
 
-        // 6. Ensure email has been verified
+    
         if (!user.isVerified) {
             return res.status(403).json({
                 success: false,
@@ -290,10 +289,10 @@ const loginUser = async (req, res) => {
             });
         }
 
-        // 7. Generate a unique session ID
+        // generate a unique session ID
         const sessionId = crypto.randomUUID();
 
-        // 8. Generate access and refresh tokens
+    
         const accessToken = generateAccessToken(user._id);
 
         const refreshToken = generateRefreshToken(
@@ -301,19 +300,19 @@ const loginUser = async (req, res) => {
             sessionId
         );
 
-        // 9. Hash the refresh token before storing it
+    
         const refreshTokenHash = crypto
             .createHash("sha256")
             .update(refreshToken)
             .digest("hex");
 
-        // 10. Save refresh-token session details
+        //  Saving refreshtoken session details
         user.refreshTokenHash = refreshTokenHash;
         user.refreshTokenSessionId = sessionId;
 
         await user.save();
 
-        // 11. Send response
+        
         return res.status(200).json({
             success: true,
             message: "Login successful",
