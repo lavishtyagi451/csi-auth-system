@@ -12,6 +12,8 @@ router.post("/register", registerUser);
 router.post("/verify-otp", verifyOTP);
 router.post("/resend-otp", resendOTP);
 router.post("/login", loginUser);
+router.post("/refresh-token", refreshAccessToken);
+router.post("/logout", logoutUser);
 
 
 module.exports = router;
