@@ -2,6 +2,16 @@ const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema(
     {
+        name: {
+        type: String,
+        required: true,
+        trim: true
+        },
+
+        otpResendCount: {
+        type: Number,
+        default: 0
+        },
         email: {
             type: String,
             required: true,
@@ -42,6 +52,11 @@ const userSchema = new mongoose.Schema(
         refreshTokenHash: {
             type: String,
             select: false
+        },
+        refreshTokenSessionId: {
+            type: String,
+            select: false
+
         }
 
     },
